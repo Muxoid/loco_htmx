@@ -14,7 +14,7 @@ use crate::{
         _entities::users,
         users::{LoginParams, RegisterParams},
     },
-    views::{self, auth::LoginResponse},
+    views::{self},
 };
 use serde_json::json; // Make sure to import the `json!` macro
 #[derive(Debug, Deserialize, Serialize)]

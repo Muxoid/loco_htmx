@@ -10,8 +10,8 @@ use loco_rs::{
 use serde::{Deserialize, Serialize};
 use serde_json::json; // Make sure to import the `json!` macro
 
-pub fn get_login(v: impl ViewRenderer) -> Result<impl IntoResponse> {
-    format::render().view(&v, "auth/login.html", json!({}))
+pub fn index(v: impl ViewRenderer) -> Result<impl IntoResponse> {
+    format::render().view(&v, "notes/index.html", json!({}))
 }
 
 pub fn post_login(

@@ -5,6 +5,14 @@ use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::models::_entities::notes::{ActiveModel, Entity, Model};
+use crate::views::user::CurrentResponse;
+use crate::{
+    models::{
+        _entities::users,
+        users::{LoginParams, RegisterParams},
+    },
+    views::{self},
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
@@ -24,8 +32,13 @@ async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
     item.ok_or_else(|| Error::NotFound)
 }
 
-pub async fn list(State(ctx): State<AppContext>) -> Result<Json<Vec<Model>>> {
-    format::json(Entity::find().all(&ctx.db).await?)
+pub async fn list(
+    auth: auth::JWT,
+    State(ctx): State<AppContext>,
+    ViewEngine(v): ViewEngine<TeraView>,
+) -> Result<impl IntoResponse> {
+    let user = users::Model::find_by_pid(&ctx.db, &auth.claims.pid).await?;
+    views::notes::index(v)
 }
 
 pub async fn add(State(ctx): State<AppContext>, Json(params): Json<Params>) -> Result<Json<Model>> {
@@ -60,7 +73,7 @@ pub async fn get_one(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Resu
 
 pub fn routes() -> Routes {
     Routes::new()
-        .prefix("api/notes")
+        .prefix("notes")
         .add("/", get(list))
         .add("/", post(add))
         .add("/:id", get(get_one))

@@ -165,7 +165,7 @@ async fn login(
         .generate_jwt(&jwt_secret.secret, &jwt_secret.expiration)
         .or_else(|_| unauthorized("unauthorized!"))?;
 
-    headers.insert("HX-Redirect", HeaderValue::from_static("/"));
+    headers.insert("HX-Redirect", HeaderValue::from_static("/home"));
 
     let cookie_value = format!("token={}; HttpOnly; Path=/", token);
     headers.insert("Set-Cookie", HeaderValue::from_str(&cookie_value).unwrap());

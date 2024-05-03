@@ -176,11 +176,9 @@ async fn login(
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("auth")
-        .add("/register", post(register))
+        .add("/register", post(register).get(render_register))
         .add("/verify", post(verify))
-        .add("/login", post(login))
+        .add("/login", post(login).get(render_login))
         .add("/forgot", post(forgot))
         .add("/reset", post(reset))
-        .add("/login", get(render_login))
-        .add("/register", get(render_register))
 }

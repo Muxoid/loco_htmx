@@ -4,14 +4,18 @@
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::models::_entities::notes::{ActiveModel, Entity, Model};
-use crate::views::user::CurrentResponse;
 use crate::{
     models::{
-        _entities::users,
+        _entities::{
+            notes::{ActiveModel, Entity, Model},
+            users,
+        },
         users::{LoginParams, RegisterParams},
     },
-    views::{self},
+    views::{
+        user::CurrentResponse,
+        {self},
+    },
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -41,7 +45,7 @@ pub async fn list(
     views::notes::index(v)
 }
 
-pub async fn add(State(ctx): State<AppContext>, Json(params): Json<Params>) -> Result<Json<Model>> {
+pub async fn add(State(ctx): State<AppContext>, Json(params): Json<Params>) -> Result<Response> {
     let mut item = ActiveModel {
         ..Default::default()
     };
@@ -54,7 +58,7 @@ pub async fn update(
     Path(id): Path<i32>,
     State(ctx): State<AppContext>,
     Json(params): Json<Params>,
-) -> Result<Json<Model>> {
+) -> Result<Response> {
     let item = load_item(&ctx, id).await?;
     let mut item = item.into_active_model();
     params.update(&mut item);
@@ -62,12 +66,12 @@ pub async fn update(
     format::json(item)
 }
 
-pub async fn remove(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<()> {
+pub async fn remove(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Response> {
     load_item(&ctx, id).await?.delete(&ctx.db).await?;
     format::empty()
 }
 
-pub async fn get_one(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Json<Model>> {
+pub async fn get_one(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Response> {
     format::json(load_item(&ctx, id).await?)
 }
 

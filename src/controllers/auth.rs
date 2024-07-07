@@ -1,12 +1,15 @@
-use axum::debug_handler;
 use axum::{
-    http::header::{HeaderMap, HeaderValue},
-    http::StatusCode,
+    debug_handler,
+    http::{
+        header::{HeaderMap, HeaderValue},
+        StatusCode,
+    },
     response::AppendHeaders,
 };
 use cookie::Cookie;
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::{
     mailers::auth::AuthMailer,
@@ -15,8 +18,7 @@ use crate::{
         users::{LoginParams, RegisterParams},
     },
     views::{self},
-};
-use serde_json::json; // Make sure to import the `json!` macro
+}; // Make sure to import the `json!` macro
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VerifyParams {
     pub token: String,
@@ -78,7 +80,7 @@ async fn register(
 async fn verify(
     State(ctx): State<AppContext>,
     Json(params): Json<VerifyParams>,
-) -> Result<Json<()>> {
+) -> Result<Response> {
     let user = users::Model::find_by_verification_token(&ctx.db, &params.token).await?;
 
     if user.email_verified_at.is_some() {
@@ -99,7 +101,7 @@ async fn verify(
 async fn forgot(
     State(ctx): State<AppContext>,
     Json(params): Json<ForgotParams>,
-) -> Result<Json<()>> {
+) -> Result<Response> {
     let Ok(user) = users::Model::find_by_email(&ctx.db, &params.email).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
@@ -117,7 +119,7 @@ async fn forgot(
 }
 
 /// reset user password by the given parameters
-async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -> Result<Json<()>> {
+async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -> Result<Response> {
     let Ok(user) = users::Model::find_by_reset_token(&ctx.db, &params.token).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
@@ -167,7 +169,7 @@ async fn login(
 
     headers.insert("HX-Redirect", HeaderValue::from_static("/home"));
 
-    let cookie_value = format!("token={}; HttpOnly; Path=/", token);
+    let cookie_value = format!("Cookie {}; HttpOnly; Path=/", token);
     headers.insert("Set-Cookie", HeaderValue::from_str(&cookie_value).unwrap());
 
     views::auth::post_login(v, headers, "auth/login.html")

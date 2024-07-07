@@ -169,7 +169,7 @@ async fn login(
 
     headers.insert("HX-Redirect", HeaderValue::from_static("/home"));
 
-    let cookie_value = format!("Cookie {}; HttpOnly; Path=/", token);
+    let cookie_value = format!("token={}; HttpOnly; Path=/", token);
     headers.insert("Set-Cookie", HeaderValue::from_str(&cookie_value).unwrap());
 
     views::auth::post_login(v, headers, "auth/login.html")
